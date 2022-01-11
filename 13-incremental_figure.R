@@ -15,7 +15,7 @@ mymethod <- "lasso"
 data_input <- "updated"
 cex.axis <- 0.8
 
-for (model_id in c(0:4, 7)) {
+for (model_id in c(1, 3, 7)) {
   i <- 0
   for (j in 1:length(outcome_names)) {
     outcome <- outcome_names[j]

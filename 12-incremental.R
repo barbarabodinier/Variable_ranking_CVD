@@ -15,7 +15,7 @@ mymethod <- "lasso"
 data_input <- "updated"
 
 # for (model_id in c(0:4,7)) {
-for (model_id in 7) {
+for (model_id in c(1,3)) {
   for (i in 1:length(outcome_names)) {
     outcome <- outcome_names[i]
     print(outcome)
@@ -76,9 +76,9 @@ for (model_id in 7) {
       if (model_id %in% c(1, 3)) {
         # Reading Random Forest results
         if (gender == "male") { # men and women inverted
-          rf <- readRDS(paste0("Results/Random_forest/mod", model_id, "women_VarImp_results_pvals.rds"))
-        } else {
           rf <- readRDS(paste0("Results/Random_forest/mod", model_id, "men_VarImp_results_pvals.rds"))
+        } else {
+          rf <- readRDS(paste0("Results/Random_forest/mod", model_id, "women_VarImp_results_pvals.rds"))
         }
         rownames(rf) <- rf$var
         print(all(rownames(rf) %in% names(selprop)))
