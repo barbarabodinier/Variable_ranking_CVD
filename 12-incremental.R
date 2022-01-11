@@ -40,7 +40,7 @@ for (model_id in c(1,3)) {
       variable_cat <- mydict[, 3]
       names(variable_cat) <- mydict[, 2]
 
-      # Extracting training set
+      # Extracting test set
       if (gender == "female") {
         eids <- readRDS("Data/Split/performance_set_eids_0_1.rds")
       } else {
@@ -48,7 +48,7 @@ for (model_id in c(1,3)) {
       }
       mydata_test <- mydata[eids, ]
 
-      # Extracting selection set
+      # Extracting training set
       if (gender == "female") {
         eids <- readRDS("Data/Split/estimation_set_eids_0_1.rds")
       } else {
