@@ -1,6 +1,5 @@
 rm(list = ls())
 
-library(focus)
 library(data.table)
 library(glmnet)
 library(pheatmap)
@@ -33,7 +32,7 @@ names(variable_cat) <- mydict[, 2]
 for (i in 1:length(outcomes)) {
   outcome <- outcomes[i]
   print(outcome)
-  
+
   for (model_id in 1:4) {
     # Initialising empty matrices
     perf <- matrix(NA, nrow = 2, ncol = 3)
@@ -42,29 +41,29 @@ for (i in 1:length(outcomes)) {
     hr <- matrix(NA, nrow = nrow(mydict), ncol = 2)
     rownames(hr) <- rownames(mydict)
     colnames(hr) <- c("male", "female")
-    
+
     for (gender in c("male", "female", "merged")) {
-      
+
       # Loading the data
       mydata <- data.frame(readRDS(paste0("Data/", toupper(outcome), "_imputed_MW_", data_input, ".rds")))
-      
+
       # Extracting training set
       eids0 <- readRDS("Data/Split/performance_set_eids_0_1.rds")
       eids1 <- readRDS("Data/Split/performance_set_eids_1_1.rds")
       mydata_test <- mydata[c(eids0, eids1), ]
-      
+
       # Extracting selection set
       eids0 <- readRDS("Data/Split/estimation_set_eids_0_1.rds")
       eids1 <- readRDS("Data/Split/estimation_set_eids_1_1.rds")
       mydata <- mydata[c(eids0, eids1), ]
-      
-      
+
+
       ### PCE
-      
+
       cox0 <- readRDS(paste0("Results/Cox_models/cox_pce_female_cvd.rds"))
       cox1 <- readRDS(paste0("Results/Cox_models/cox_pce_male_cvd.rds"))
-      
-      
+
+
       # ## Training
       #
       # # Get probabilities
@@ -85,10 +84,10 @@ for (i in 1:length(outcomes)) {
       #
       # # Concordance over full sample
       # perf[1,1]=GetConcordance(survobject=survobject, S=myS)
-      
-      
+
+
       ## Test
-      
+
       # Get probabilities
       if (gender == "merged") {
         myS <- c(cox0$S_test, cox1$S_test)
@@ -102,10 +101,10 @@ for (i in 1:length(outcomes)) {
       mydata_test <- mydata_test[names(myS), ]
       N[gender] <- paste(formatC(cumsum(rev(table(mydata_test$case))), big.mark = ","), collapse = "/")
       print(all(names(myS) == rownames(mydata_test)))
-      
+
       # Compute survival time
       survobject <- Surv(mydata_test$time, mydata_test$case)
-      
+
       # Concordance over full sample
       if (gender == "merged") {
         perf[1, 1] <- GetConcordance(survobject = survobject, S = myS)
@@ -116,12 +115,12 @@ for (i in 1:length(outcomes)) {
       if (gender == "male") {
         perf[1, 2] <- GetConcordance(survobject = survobject, S = myS)
       }
-      
+
       ### LASSO stability selection
-      
+
       cox0 <- readRDS(paste0("Results/Cox_models/cox_model_lasso_stable_", outcome, "_m", model_id, "_", data_input, "_female.rds"))
       cox1 <- readRDS(paste0("Results/Cox_models/cox_model_lasso_stable_", outcome, "_m", model_id, "_", data_input, "_male.rds"))
-      
+
       if (gender == "merged") {
         tmp <- formatC(summary(cox0$cox_model)$coefficients[, 2], format = "f", digits = 2)
         hr[names(tmp), "female"] <- tmp
@@ -132,10 +131,11 @@ for (i in 1:length(outcomes)) {
         })), ]
         rownames(hr) <- mydict[rownames(hr), 2]
         hr <- hr[sort.list(rownames(hr)), ]
-        write.xlsx(as.data.frame(hr), paste0("Tables/HR_", outcome, "_m", model_id, "_", data_input, ".xlsx"), 
-                   row.names = TRUE, overwrite = TRUE)
+        write.xlsx(as.data.frame(hr), paste0("Tables/HR_", outcome, "_m", model_id, "_", data_input, ".xlsx"),
+          row.names = TRUE, overwrite = TRUE
+        )
       }
-      
+
       # ## Training
       #
       # # Get probabilities
@@ -147,9 +147,9 @@ for (i in 1:length(outcomes)) {
       #
       # # Concordance over full sample
       # perf[2,1]=GetConcordance(survobject=survobject, S=myS)
-      
+
       ## Test
-      
+
       # Get probabilities
       if (gender == "merged") {
         myS <- c(cox0$S_test, cox1$S_test)
@@ -162,10 +162,10 @@ for (i in 1:length(outcomes)) {
       }
       mydata_test <- mydata_test[names(myS), ]
       print(all(names(myS) == rownames(mydata_test)))
-      
+
       # Compute survival time
       survobject <- Surv(mydata_test$time, mydata_test$case)
-      
+
       # Concordance over full sample
       if (gender == "merged") {
         perf[2, 1] <- GetConcordance(survobject = survobject, S = myS)
@@ -176,8 +176,8 @@ for (i in 1:length(outcomes)) {
       if (gender == "male") {
         perf[2, 2] <- GetConcordance(survobject = survobject, S = myS)
       }
-      
-      
+
+
       # ### Random Forest
       #
       # cox0=readRDS(paste0("Results/cox_model_vi_random_forest_",0,outcome,".rds"))
@@ -212,9 +212,10 @@ for (i in 1:length(outcomes)) {
     rownames(perf) <- c("PCE", "LASSO")
     colnames(perf) <- c("Merged", "Men", "Women")
     perf <- rbind(N, perf)
-    write.xlsx(as.data.frame(perf), paste0("Tables/C_statistics_", outcome, "_m", model_id, "_", data_input, ".xlsx"), 
-               row.names = TRUE, col.names=TRUE, overwrite = TRUE)
-    
+    write.xlsx(as.data.frame(perf), paste0("Tables/C_statistics_", outcome, "_m", model_id, "_", data_input, ".xlsx"),
+      row.names = TRUE, col.names = TRUE, overwrite = TRUE
+    )
+
     # Differences in C statistics
     diff <- rbind(c(
       DeltaCStat(perf[2, 1], perf[3, 1]),
@@ -224,6 +225,7 @@ for (i in 1:length(outcomes)) {
     colnames(diff) <- c("Merged", "Men", "Women")
     diff <- rbind(N, diff)
     write.xlsx(as.data.frame(diff), paste0("Tables/Difference_c_statistics_", outcome, "_m", model_id, "_", data_input, ".xlsx"),
-               overwrite = TRUE)
+      overwrite = TRUE
+    )
   }
 }

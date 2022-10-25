@@ -1,5 +1,6 @@
-library(focus)
+library(sharp)
 library(openxlsx)
+print(packageVersion("sharp"))
 
 # Reading arguments
 args <- commandArgs(trailingOnly = TRUE)

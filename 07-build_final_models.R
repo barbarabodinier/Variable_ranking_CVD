@@ -1,6 +1,6 @@
 rm(list = ls())
 
-library(focus)
+library(sharp)
 library(pheatmap)
 library(survival)
 library(abind)
@@ -60,6 +60,7 @@ for (i in 1:length(outcome_names)) {
     for (model_id in 1:4) {
       print(model_id)
       stab <- readRDS(paste0("Results/HPC_results/stability_", outcome, "_m", model_id, "_", data_input, "_", gender, ".rds"))
+      class(stab) <- "variable_selection"
       selected <- SelectedVariables(stab)
       print(sum(selected))
       selected <- names(selected)[selected == 1]

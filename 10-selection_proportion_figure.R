@@ -1,6 +1,6 @@
 rm(list = ls())
 
-library(focus)
+library(sharp)
 library(pheatmap)
 library(survival)
 library(abind)
@@ -27,6 +27,7 @@ for (data_input in c("updated")) {
 
       # Selection proportions (Men)
       stab <- readRDS(paste0("Results/HPC_results/stability_", outcome, "_m", model_id, "_", data_input, "_male.rds"))
+      class(stab) <- "variable_selection"
       {
         pdf(paste0("Figures/Calibration_m", model_id, "_", outcome, "_", data_input, "_male.pdf"),
           width = 12, height = 7, useDingbats = FALSE
@@ -41,6 +42,7 @@ for (data_input in c("updated")) {
 
       # Selection proportions (Women)
       stab <- readRDS(paste0("Results/HPC_results/stability_", outcome, "_m", model_id, "_", data_input, "_female.rds"))
+      class(stab) <- "variable_selection"
       {
         pdf(paste0("Figures/Calibration_m", model_id, "_", outcome, "_", data_input, "_female.pdf"),
           width = 12, height = 7, useDingbats = FALSE

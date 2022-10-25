@@ -1,12 +1,7 @@
 rm(list = ls())
 
-library(focus)
-library(pheatmap)
-library(survival)
 library(abind)
 library(openxlsx)
-library(plotrix)
-library(colorspace)
 source("Scripts/functions.R")
 
 dir.create("Results/Cox_models", showWarnings = FALSE)

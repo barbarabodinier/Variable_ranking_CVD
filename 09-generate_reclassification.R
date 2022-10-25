@@ -1,6 +1,5 @@
 rm(list = ls())
 
-library(focus)
 library(data.table)
 library(glmnet)
 library(pheatmap)

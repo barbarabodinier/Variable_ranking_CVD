@@ -1,6 +1,6 @@
 rm(list = ls())
 
-library(focus)
+library(sharp)
 library(pheatmap)
 library(survival)
 library(abind)
@@ -15,7 +15,7 @@ mymethod <- "lasso"
 data_input <- "updated"
 
 # for (model_id in c(0:4,7)) {
-for (model_id in c(1,3)) {
+for (model_id in c(1, 3)) {
   for (i in 1:length(outcome_names)) {
     outcome <- outcome_names[i]
     print(outcome)
@@ -71,6 +71,7 @@ for (model_id in c(1,3)) {
 
       # Reading LASSO results
       stab <- readRDS(paste0("Results/HPC_results/stability_", outcome, "_m", model_id, "_", data_input, "_", gender, ".rds"))
+      class(stab) <- "variable_selection"
       selprop <- SelectionProportions(stab)
 
       if (model_id %in% c(1, 3)) {
@@ -103,8 +104,9 @@ for (model_id in c(1,3)) {
         )
         rownames(mytable) <- mydict[rownames(mytable), 2]
         mytable <- mytable[, c(1, 3, 2)]
-        write.xlsx(mytable, paste0("Tables/Selection_counts_", outcome, "_m", model_id, "_", data_input, "_", gender, ".xlsx"), 
-                   row.names = TRUE, overwrite = TRUE)
+        write.xlsx(mytable, paste0("Tables/Selection_counts_", outcome, "_m", model_id, "_", data_input, "_", gender, ".xlsx"),
+          row.names = TRUE, overwrite = TRUE
+        )
       }
 
       # Defining order of inclusion

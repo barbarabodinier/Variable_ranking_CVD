@@ -1,5 +1,6 @@
-library(focus)
+library(sharp)
 library(openxlsx)
+print(packageVersion("sharp"))
 
 # Reading arguments
 args <- commandArgs(trailingOnly = TRUE)
@@ -48,7 +49,7 @@ print(table(y[, 2]))
 Lambda <- LambdaSequence(lmax = 0.05, lmin = 1e-4, cardinal = 100)
 system.time({
   stab <- VariableSelection(
-    xdata = x, ydata = y, family = "cox", K = 1000, 
+    xdata = x, ydata = y, family = "cox", K = 1000,
     pi_list = seq(0.55, 0.95, by = 0.01), Lambda = Lambda
   )
 })
