@@ -11,7 +11,8 @@ library(plotrix)
 library(PredictABEL)
 library(Hmisc)
 library(colorspace)
-source("Scripts/reclassification_PredictABEL_function.R")
+library(pROC)
+# source("Scripts/reclassification_PredictABEL_function.R")
 source("Scripts/functions.R")
 source("Scripts/roc_functions.R")
 
@@ -20,20 +21,19 @@ dir.create("Results", showWarnings = FALSE)
 dir.create("Figures/Exploration", showWarnings = FALSE)
 
 outcomes <- c("cvd")
-model_id <- 1
+model_id <- 7
 data_input <- "updated"
-nbreaks <- 500
-legend_letters <- c("A", "B", "C")
-names(legend_letters) <- c("merged", "male", "female")
+legend_letters <- c("A", "B")
+names(legend_letters) <- c("male", "female")
 
 for (outcome in outcomes) {
   print(outcome)
 
-  for (model_id in 1) {{ pdf(paste0("Figures/ROC_curve_", outcome, "_m", model_id, "_", data_input, ".pdf"),
-    width = 15, height = 5
+  { pdf(paste0("Figures/ROC_curve_", outcome, "_m", model_id, "_", data_input, ".pdf"),
+    width = 12, height = 6
   )
-  par(mar = c(5, 5, 1, 1), mfrow = c(1, 3))
-  for (gender in c("merged", "male", "female")) {
+  par(mar = c(5, 5, 1, 1), mfrow = c(1, 2))
+  for (gender in c("male", "female")) {
 
     # Loading the data
     mydata <- data.frame(readRDS("Data/CVD_imputed_MW_updated.rds"))
@@ -44,68 +44,65 @@ for (outcome in outcomes) {
     )
     mydata_test <- mydata[eids_test, ]
 
-    # Loading the models
-    cox_stable0 <- readRDS(paste0("Results/Cox_models/cox_model_lasso_stable_", outcome, "_m", model_id, "_", data_input, "_female.rds"))
-    cox_stable1 <- readRDS(paste0("Results/Cox_models/cox_model_lasso_stable_", outcome, "_m", model_id, "_", data_input, "_male.rds"))
+    # Loading the models (stability)
+    logit_stable0 <- readRDS(paste0("Results/Cox_models/logit_model_lasso_stable_", outcome, "_m", model_id, "_", data_input, "_female.rds"))
+    logit_stable1 <- readRDS(paste0("Results/Cox_models/logit_model_lasso_stable_", outcome, "_m", model_id, "_", data_input, "_male.rds"))
 
     if (gender == "merged") {
-      S_lasso <- c(cox_stable0$S_test, cox_stable1$S_test)
+      S_lasso <- c(logit_stable0$predicted_test, logit_stable1$predicted_test)
     }
     if (gender == "female") {
-      S_lasso <- c(cox_stable0$S_test)
+      S_lasso <- c(logit_stable0$predicted_test)
     }
     if (gender == "male") {
-      S_lasso <- c(cox_stable1$S_test)
+      S_lasso <- c(logit_stable1$predicted_test)
     }
     mydata_test <- mydata_test[names(S_lasso), ]
 
-    # cox_stable0=readRDS(paste0("Results/cox_model_vi_random_forest_",0,outcome,".rds"))
-    # cox_stable1=readRDS(paste0("Results/cox_model_vi_random_forest_",1,outcome,".rds"))
-    # S_rf=c(cox_stable0$S_test, cox_stable1$S_test)
-
-    cox_pce0 <- readRDS(paste0("Results/Cox_models/cox_pce_female_", outcome, ".rds"))
-    cox_pce1 <- readRDS(paste0("Results/Cox_models/cox_pce_male_", outcome, ".rds"))
+    # Loading the models (PCE)
+    logit_pce0 <- readRDS(paste0("Results/Cox_models/logit_pce_female_", outcome, ".rds"))
+    logit_pce1 <- readRDS(paste0("Results/Cox_models/logit_pce_male_", outcome, ".rds"))
 
     if (gender == "merged") {
-      S_pce <- c(cox_pce0$S_test, cox_pce1$S_test)
+      S_pce <- c(logit_pce0$predicted_test, logit_pce1$predicted_test)
     }
     if (gender == "female") {
-      S_pce <- c(cox_pce0$S_test)
+      S_pce <- c(logit_pce0$predicted_test)
     }
     if (gender == "male") {
-      S_pce <- c(cox_pce1$S_test)
+      S_pce <- c(logit_pce1$predicted_test)
     }
-
     print(all(names(S_pce) == rownames(mydata_test)))
     print(all(names(S_lasso) == rownames(mydata_test)))
-    # print(all(names(S_rf)==rownames(mydata_test)))
 
-    # Compute sensitivity, specificity, AUC
-    roc_pce <- GetROC(y = mydata_test$case, x = 1 - S_pce, nbreaks = nbreaks)
-    roc_lasso <- GetROC(y = mydata_test$case, x = 1 - S_lasso, nbreaks = nbreaks)
-    # roc_rf=GetROC(y=mydata_test$case, x=1-S_rf, nbreaks=nbreaks)
+    # Computing sensitivity, specificity
+    roc_pce=pROC::roc(predictor=S_pce, response=mydata_test$case, ci=TRUE)
+    roc_lasso=pROC::roc(predictor=S_lasso, response=mydata_test$case, ci=TRUE)
+    
+    # Computing AUC
+    auc_pce=ReformatAUC(as.numeric(roc_pce$ci), digits=2)
+    auc_lasso=ReformatAUC(as.numeric(roc_lasso$ci), digits=2)
 
     # ROC curve
-    plot(roc_pce$fpr, roc_pce$tpr,
+    plot(1-roc_pce$specificities, roc_pce$sensitivities,
       type = "l", las = 1, cex.lab = 1.5,
       xlab = "False Positive Rate", ylab = "True Positive Rate",
       col = "navy", lwd = 1.5
     )
-    mtext(legend_letters[gender], side = 2, line = 2.5, at = 1, cex = 2, las = 1)
-    # lines(roc_rf$fpr, roc_rf$tpr, type="l", las=1, cex.lab=1.5,
-    #       col="forestgreen", lwd=1.5)
-    lines(roc_lasso$fpr, roc_lasso$tpr,
+    mtext(legend_letters[gender], side = 2, line = 2.5, at = 1, cex = 4, las = 1)
+    lines(1-roc_lasso$specificities, roc_lasso$sensitivities,
       type = "l", las = 1, cex.lab = 1.5,
-      col = "tomato", lwd = 1.5, lty = 2
+      col = "tomato", lwd = 1.5, lty = 1
     )
     abline(0, 1, lty = 3)
     legend("bottomright",
-      lty = c(1, 2, 1), col = c("navy", "tomato", "forestgreen"), lwd = 1.5, bty = "n", cex = 1.3,
+      lty = 1, col = c("navy", "tomato", "forestgreen"), 
+      lwd = 1.5, bty = "n", cex = 1,
       legend = c(
-        paste0("PCE: AUC = ", formatC(roc_pce$auc, format = "f", digits = 2)),
-        paste0("LASSO Stability Selection: AUC = ", formatC(roc_lasso$auc, format = "f", digits = 2))
+        paste0("PCE: AUC = ", auc_pce),
+        paste0("LASSO Stability Selection: AUC = ", auc_lasso)
       )
     )
   }
-  dev.off() }}
+  dev.off() }
 }

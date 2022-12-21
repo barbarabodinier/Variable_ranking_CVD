@@ -14,8 +14,7 @@ outcome_names <- c("cvd")
 mymethod <- "lasso"
 data_input <- "updated"
 
-# for (model_id in c(0:4,7)) {
-for (model_id in c(1, 3)) {
+for (model_id in c(1, 3, 7)) {
   for (i in 1:length(outcome_names)) {
     outcome <- outcome_names[i]
     print(outcome)

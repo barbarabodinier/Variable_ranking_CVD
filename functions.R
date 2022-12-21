@@ -355,3 +355,13 @@ GetGNDStat <- function(survobject, predicted_S, mydata) {
   )
   return(gnd)
 }
+
+
+ReformatAUC=function(auc, digits=2){
+  return(paste0(formatC(auc[2], format="f", digits=digits),
+                " [", 
+                formatC(auc[1], format="f", digits=digits), 
+                "-", 
+                formatC(auc[3], format="f", digits=digits), 
+                "]"))
+}

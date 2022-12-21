@@ -33,7 +33,7 @@ for (i in 1:length(outcomes)) {
   outcome <- outcomes[i]
   print(outcome)
 
-  for (model_id in 1:4) {
+  for (model_id in c(1:4,7)) {
     # Initialising empty matrices
     perf <- matrix(NA, nrow = 2, ncol = 3)
     N <- rep(NA, 3)
