@@ -37,9 +37,9 @@ for (model_id in c(1, 3)) {
         ids_columns <- rownames(dict)[which(dict[, paste0("Model.", model_id, ".(Female)")] == "X")]
       }
       tmpdata <- tmpdata[, ids_columns]
-      
+
       # Using complete case
-      tmpdata=na.exclude(tmpdata)
+      tmpdata <- na.exclude(tmpdata)
 
       # Identifying binary variables
       binary <- ifelse(apply(tmpdata, 2, FUN = function(x) {

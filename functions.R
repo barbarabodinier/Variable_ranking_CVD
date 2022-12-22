@@ -15,7 +15,7 @@ RunCoxSelected <- function(x, x_test, selected, digits = 3, verbose = TRUE) {
 
   return(list(
     cox_model = mycox,
-    S_train=S_train,
+    S_train = S_train,
     S_test = S_test,
     c_test = c_selected_test
   ))
@@ -278,8 +278,8 @@ GetObsCumInc <- function(survobject, linear.predictors) {
   ## KM deciles
   decilesb <- quantile(linear.predictors, probs = seq(0, 1, by = 0.1)) # decile boundaries
   deciles <- cut(linear.predictors,
-                 breaks = decilesb,
-                 include.lowest = TRUE, labels = seq(1:10)
+    breaks = decilesb,
+    include.lowest = TRUE, labels = seq(1:10)
   )
 
   survfit <- survfit(survobject ~ deciles)
